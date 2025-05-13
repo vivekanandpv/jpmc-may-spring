@@ -6,8 +6,12 @@ import in.athenaeum.jpmcmayspring.models.Customer;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.util.List;
 
 @Repository
@@ -41,12 +45,24 @@ public class CustomerRepositoryImplementation implements CustomerRepository {
 
     @Override
     public Customer create(Customer customer) {
-        String sql = "INSERT INTO customer(first_name, last_name, email) VALUES(?, ?, ?)";
-        jdbcTemplate.update(sql, new Object[] {customer.getFirstName(), customer.getLastName(), customer.getEmail()});
+        String sql = "INSERT INTO customer (first_name, last_name, email) VALUES (?, ?, ?)";
 
-        int newCustomerId = jdbcTemplate.queryForObject("SELECT LAST_INSERT_ID()", Integer.class);
-        
-        customer.setCustomerId(newCustomerId);
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, customer.getFirstName());
+            ps.setString(2, customer.getLastName());
+            ps.setString(3, customer.getEmail());
+            return ps;
+        }, keyHolder);
+
+        // Retrieve the generated customer ID
+        Number key = keyHolder.getKey();
+        if (key != null) {
+            customer.setCustomerId(key.intValue());
+        }
+
         return customer;
     }
 
