@@ -1,6 +1,11 @@
 package in.athenaeum.jpmcmayspring.models;
 
+import jakarta.persistence.*;
+
+@Entity
 public class Customer {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int customerId;
     private String firstName;
     private String lastName;

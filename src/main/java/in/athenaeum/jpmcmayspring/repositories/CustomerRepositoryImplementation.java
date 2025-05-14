@@ -14,7 +14,7 @@ import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.List;
 
-@Repository
+//@Repository
 public class CustomerRepositoryImplementation implements CustomerRepository {
     
     private final JdbcTemplate jdbcTemplate;
